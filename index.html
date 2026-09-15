@@ -1,0 +1,1356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TypeRush | Type Fast. Think Faster.</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  
+  <!-- Phosphor Icons -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            surface: {
+              50: '#fafafa',
+              100: '#f4f4f5',
+              200: '#e4e4e7',
+              300: '#d4d4d8',
+              400: '#a1a1aa',
+              500: '#71717a',
+              600: '#52525b',
+              700: '#3f3f46',
+              800: '#27272a',
+              900: '#18181b',
+              950: '#09090b',
+            },
+            primary: '#818cf8', // Indigo 400
+            primaryGlow: 'rgba(129, 140, 248, 0.15)',
+            correct: '#4ade80', // Green 400
+            error: '#f87171',   // Red 400
+            textMain: '#f4f4f5', // Zinc 100
+            textMuted: '#71717a', // Zinc 500
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            jbmono: ['"JetBrains Mono"', 'monospace'],
+            firacode: ['"Fira Code"', 'monospace'],
+            spacemono: ['"Space Mono"', 'monospace'],
+            robotomono: ['"Roboto Mono"', 'monospace']
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.3s ease-out forwards',
+          },
+          keyframes: {
+            fadeIn: {
+              '0%': { opacity: '0', transform: 'translateY(10px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' }
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    :root {
+      --typing-font: 'JetBrains Mono', monospace;
+    }
+
+    body {
+      background-color: #09090b; /* Zinc 950 */
+      color: #f4f4f5; /* Zinc 100 */
+    }
+
+    /* Subtle Dot Grid Background */
+    .bg-grid {
+      background-size: 32px 32px;
+      background-image: radial-gradient(circle, #27272a 1px, transparent 1px);
+    }
+
+    /* Custom Scrollbar for sleek UI */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: #52525b; }
+
+    /* Refined Surface Panels instead of Glass */
+    .surface-panel {
+      background: #18181b; /* Zinc 900 */
+      border: 1px solid #27272a; /* Zinc 800 */
+      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+    }
+
+    .surface-pill {
+      background: #09090b; /* Zinc 950 */
+      border: 1px solid #27272a; /* Zinc 800 */
+    }
+
+    #words-container {
+      font-family: var(--typing-font);
+      transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    .word {
+      padding: 2px 4px;
+      margin: 4px;
+      border-radius: 6px;
+      transition: all 0.15s ease;
+      position: relative;
+      border: 1px solid transparent;
+    }
+
+    /* Handcrafted Active Word Style (Subtle) */
+    .word.active {
+      background: #27272a; /* Zinc 800 */
+      border: 1px solid #3f3f46;
+    }
+
+    .word.error-word {
+      border-bottom: 2px solid #f87171;
+    }
+
+    .char {
+      transition: color 0.1s;
+    }
+    .char.correct { color: #f4f4f5; }
+    .char.incorrect { color: #f87171; }
+    .char.extra { color: #ef4444; opacity: 0.8; }
+    .char.pending { color: #52525b; } /* Zinc 600 - More muted for contrast */
+    
+    .word.active .char.pending { color: #a1a1aa; } /* Zinc 400 - Brighter when active */
+
+    /* Custom Caret */
+    .caret {
+      position: absolute;
+      bottom: 4px;
+      width: 2px;
+      height: 24px;
+      background: #818cf8;
+      border-radius: 2px;
+      transition: left 0.1s cubic-bezier(0.2, 0, 0, 1);
+      box-shadow: 0 0 10px rgba(129, 140, 248, 0.4);
+    }
+    .caret-blink {
+      animation: blink 1s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+    /* Interactive UI elements */
+    .nav-btn {
+      transition: all 0.15s ease;
+      color: #71717a; /* Zinc 500 */
+    }
+    .nav-btn.active {
+      background: #27272a; /* Zinc 800 */
+      color: #f4f4f5;
+    }
+    .nav-btn:hover:not(.active) {
+      background: #18181b; /* Zinc 900 */
+      color: #a1a1aa;
+    }
+    
+    .modifier-btn.active {
+      color: #818cf8;
+      background: rgba(129, 140, 248, 0.1);
+    }
+
+    /* Ambient Cursor Glow (Kept but refined) */
+    /* Ambient Cursor Glow (Kept but refined) */
+    #cursor-glow {
+      position: fixed;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(129, 140, 248, 0.08) 0%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      z-index: 0;
+      transition: opacity 0.3s ease;
+      opacity: 0;
+    }
+  </style>
+</head>
+<body class="bg-grid min-h-screen flex flex-col items-center justify-between overflow-x-hidden selection:bg-primaryGlow selection:text-primary relative font-sans text-textMain">
+
+  <div id="cursor-glow"></div>
+
+  <nav class="mt-12 z-50 w-full max-w-5xl px-4 flex flex-col items-center relative">
+    
+    <div class="text-center mb-8">
+      <h1 class="text-4xl font-bold tracking-tight text-white flex items-center justify-center gap-3">
+        <div class="bg-surface-800 p-2 rounded-xl border border-surface-700 shadow-sm"><i class="ph-fill ph-lightning text-primary text-2xl"></i></div> TypeRush
+      </h1>
+      <p class="text-sm text-textMuted mt-3 font-medium tracking-wide">Type Fast. Think Faster.</p>
+    </div>
+
+    <!-- Main Toolbar (Segmented Control Style) -->
+    <div class="surface-pill rounded-2xl p-1.5 flex flex-wrap items-center justify-center gap-2 sm:gap-4 shadow-lg">
+     
+      
+      <!-- Modes -->
+      <div class="flex items-center bg-surface-900 rounded-xl p-1 border border-surface-800">
+        <button onclick="app.setMode('time')" id="mode-time" class="nav-btn active px-4 py-1.5 rounded-lg text-sm flex items-center gap-2 font-medium">
+          <i class="ph ph-clock"></i> Time
+        </button>
+        <button onclick="app.setMode('words')" id="mode-words" class="nav-btn px-4 py-1.5 rounded-lg text-sm flex items-center gap-2 font-medium">
+          <i class="ph ph-text-t"></i> Words
+        </button>
+        <button onclick="app.setMode('surprise')" id="mode-surprise" class="nav-btn px-4 py-1.5 rounded-lg text-sm flex items-center gap-2 font-medium">
+          <i class="ph ph-sparkle"></i> Surprise
+        </button>
+      </div>
+ 
+      
+      <div class="w-px h-6 bg-surface-800 hidden sm:block"></div>
+
+      <!-- Modifiers -->
+      <div class="flex items-center gap-1">
+        <button onclick="app.toggleModifier('punctuation')" id="mod-punctuation" class="modifier-btn p-2 rounded-lg text-textMuted hover:text-white hover:bg-surface-800 transition" title="Toggle Punctuation">
+          <i class="ph ph-quotes text-lg"></i>
+        </button>
+        <button onclick="app.toggleModifier('numbers')" id="mod-numbers" class="modifier-btn p-2 rounded-lg text-textMuted hover:text-white hover:bg-surface-800 transition" title="Toggle Numbers">
+          <i class="ph ph-hash text-lg"></i>
+        </button>
+      </div>
+
+      <div class="w-px h-6 bg-surface-800 hidden sm:block"></div>
+
+      <!-- Tools -->
+      <div class="flex items-center gap-1">
+        <button onclick="app.toggleSettingsModal()" class="p-2 rounded-lg text-textMuted hover:text-white hover:bg-surface-800 transition" title="Settings">
+          <i class="ph ph-gear text-lg"></i>
+        </button>
+        <button onclick="app.toggleLeaderboardModal()" class="p-2 rounded-lg text-textMuted hover:text-white hover:bg-surface-800 transition" title="Leaderboard">
+          <i class="ph ph-trophy text-lg"></i>
+        </button>
+        <button id="btn-auth-nav" onclick="app.handleAuthClick()" class="p-2 rounded-lg text-textMuted hover:text-white hover:bg-surface-800 transition flex items-center gap-2 pr-4" title="Account">
+          <i class="ph ph-user-circle text-lg"></i>
+          <span id="nav-user-name" class="text-xs font-medium hidden sm:inline">Sign In</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Sub-options (Time/Words limits) -->
+    <!-- Sub-options (Time/Words limits) -->
+    <div id="sub-options-container" class="mt-5 flex items-center justify-center gap-4 text-sm font-jbmono text-textMuted h-8 transition-opacity">
+      <!-- Injected by JS based on mode -->
+    </div>
+  </nav>
+
+  <main class="flex-1 w-full max-w-5xl px-4 flex flex-col items-center justify-center relative z-10 my-8">
+    
+    <!-- Live Stats Overlay (Active during typing) -->
+    <div id="live-stats" class="w-full flex justify-between items-end mb-4 px-2 opacity-30 transition-opacity duration-300">
+      <div class="text-primary font-jbmono font-bold text-5xl tracking-tighter" id="live-timer">30</div>
+      <div class="flex gap-8 font-jbmono text-sm text-textMuted">
+        <div class="flex flex-col items-end">
+          <span class="text-[10px] text-surface-500 uppercase tracking-widest font-semibold">WPM</span>
+          <span id="live-wpm" class="text-2xl text-white font-medium">0</span>
+        </div>
+        <div class="flex flex-col items-end">
+          <span class="text-[10px] text-surface-500 uppercase tracking-widest font-semibold">ACC</span>
+          <span id="live-acc" class="text-2xl text-white font-medium">100%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Solid Typing Editor Surface -->
+    <div id="typing-board" class="surface-panel w-full rounded-2xl p-6 sm:p-12 relative cursor-text group overflow-hidden">
+      
+      <!-- Focus Overlay -->
+      <div id="focus-overlay" class="absolute inset-0 bg-surface-950/90 backdrop-blur-sm z-30 flex flex-col items-center justify-center transition-opacity duration-200">
+        <div class="flex items-center gap-3 text-white font-medium bg-surface-900 px-6 py-3 rounded-xl border border-surface-700 shadow-xl">
+          <i class="ph-fill ph-cursor-click animate-pulse text-primary text-xl"></i>
+          <span>Click or press any key to focus</span>
+        </div>
+      </div>
+
+      <!-- Hidden Input -->
+      <input type="text" id="hidden-input" class="absolute top-0 left-0 w-px h-px opacity-0 -z-50" autocomplete="off" spellcheck="false" tabindex="0" />
+
+      <!-- Words Window -->
+      <div class="relative w-full h-[140px] overflow-hidden select-none" id="words-window">
+        <div id="words-container" class="flex flex-wrap text-2xl sm:text-3xl leading-relaxed content-start w-full absolute top-0 left-0">
+          <!-- Words injected here -->
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Action Shortcuts -->
+    <div class="mt-8 flex items-center justify-center gap-4 text-xs font-jbmono text-textMuted">
+      <button onclick="app.resetTest()" class="px-4 py-2 rounded-lg bg-glass-100 hover:bg-glass-200 border border-glass-200 transition flex items-center gap-2 hover:text-white">
+        <i class="ph ph-arrow-counter-clockwise text-primary"></i> Restart (Tab + Enter)
+      </button>
+    </div>
+
+  </main>
+
+  <section id="results-view" class="hidden flex-1 w-full max-w-5xl px-4 flex-col items-center justify-center z-20 my-8 animate-fade-in">
+    <div class="surface-panel w-full rounded-2xl p-6 sm:p-10 border border-primary/20">
+      
+      <div class="flex items-center justify-between border-b border-surface-800 pb-6 mb-8">
+        <div>
+          <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+            <i class="ph-fill ph-chart-line-up text-primary"></i> Session Analytics
+          </h2>
+          <p class="text-sm text-textMuted mt-1" id="res-test-type">Time 30s • English</p>
+        </div>
+        <button onclick="app.resetTest()" class="bg-primary hover:bg-indigo-400 text-surface-950 px-5 py-2.5 rounded-lg font-semibold transition shadow-lg shadow-primary/20 flex items-center gap-2">
+          Next Test <i class="ph-bold ph-caret-right"></i>
+        </button>
+      </div>
+
+      <!-- Main Metrics -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+        <div class="bg-surface-950 rounded-xl p-5 border border-surface-800">
+          <div class="text-[11px] text-textMuted uppercase tracking-widest font-bold mb-1">WPM</div>
+          <div class="text-5xl font-black text-primary font-jbmono tracking-tighter" id="res-wpm">0</div>
+          <div class="text-xs text-textMuted mt-2 font-jbmono" id="res-raw-wpm">Raw: 0</div>
+        </div>
+        <div class="bg-surface-950 rounded-xl p-5 border border-surface-800">
+          <div class="text-[11px] text-textMuted uppercase tracking-widest font-bold mb-1">Accuracy</div>
+          <div class="text-5xl font-black text-correct font-jbmono tracking-tighter" id="res-acc">100<span class="text-2xl">%</span></div>
+          <div class="text-xs text-textMuted mt-2 font-jbmono" id="res-chars">0/0/0/0</div>
+        </div>
+        <div class="bg-surface-950 rounded-xl p-5 border border-surface-800">
+          <div class="text-[11px] text-textMuted uppercase tracking-widest font-bold mb-1">Consistency</div>
+          <div class="text-5xl font-black text-white font-jbmono tracking-tighter" id="res-cons">0<span class="text-2xl">%</span></div>
+        </div>
+        <div class="bg-surface-950 rounded-xl p-5 border border-surface-800">
+          <div class="text-[11px] text-textMuted uppercase tracking-widest font-bold mb-1">Avg Digraph</div>
+          <div class="text-5xl font-black text-surface-400 font-jbmono tracking-tighter" id="res-lat">0<span class="text-2xl text-textMuted">ms</span></div>
+        </div>
+      </div>
+
+      <!-- Chart -->
+      <div class="w-full h-56 bg-surface-950 rounded-xl border border-surface-800 p-4 mb-6 relative">
+        <div class="absolute top-4 left-4 text-xs font-jbmono text-textMuted flex gap-4">
+          <span class="flex items-center gap-1"><div class="w-2 h-2 rounded-full bg-primary"></div> Speed</span>
+          <span class="flex items-center gap-1"><div class="w-2 h-2 rounded-full bg-error"></div> Errors</span>
+        </div>
+        <svg id="chart-svg" class="w-full h-full overflow-visible mt-2"></svg>
+      </div>
+
+      <!-- Weak Keys & Practice -->
+      <div class="bg-surface-950 rounded-xl p-5 border border-surface-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <!-- Weak Keys & Practice -->
+      <div class="bg-surface-950 rounded-xl p-5 border border-surface-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div>
+          <h3 class="text-sm font-semibold text-white mb-2 flex items-center gap-2">
+            <i class="ph-fill ph-warning-circle text-error"></i> Missed / Slow Keys
+          </h3>
+          <div id="weak-keys-container" class="flex flex-wrap gap-2">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+        <button onclick="app.startDrill()" id="btn-drill" class="px-6 py-2.5 rounded-lg bg-surface-900 border border-error/30 text-error hover:bg-error/10 hover:border-error transition font-medium flex items-center gap-2 whitespace-nowrap hidden">
+          <i class="ph-bold ph-barbell"></i> Drill Weak Keys
+        </button>
+      </div>
+
+    </div>
+  </section>
+
+  
+  <!-- Settings Modal -->
+  <div id="modal-settings" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity">
+    <div class="surface-panel w-full max-w-md rounded-2xl p-6 relative scale-95 transition-transform" id="modal-settings-content">
+      <button onclick="app.toggleSettingsModal()" class="absolute top-4 right-4 text-textMuted hover:text-white">
+        <i class="ph-bold ph-x text-xl"></i>
+      </button>
+      <h3 class="text-xl font-bold text-white mb-6">Settings</h3>
+      
+      <div class="space-y-6">
+        <!-- Font Selection -->
+        <div>
+          <label class="text-[10px] text-textMuted uppercase font-bold tracking-widest mb-3 block">Typeface</label>
+          <div class="grid grid-cols-2 gap-2">
+            <button onclick="app.setFont('jbmono')" id="font-jbmono" class="font-btn p-2.5 rounded-lg bg-surface-800 border border-primary text-white text-sm font-jbmono">JetBrains Mono</button>
+            <button onclick="app.setFont('firacode')" id="font-firacode" class="font-btn p-2.5 rounded-lg bg-surface-800 border border-surface-700 text-textMuted hover:text-white text-sm font-firacode">Fira Code</button>
+            <button onclick="app.setFont('spacemono')" id="font-spacemono" class="font-btn p-2.5 rounded-lg bg-surface-800 border border-surface-700 text-textMuted hover:text-white text-sm font-spacemono">Space Mono</button>
+            <button onclick="app.setFont('robotomono')" id="font-robotomono" class="font-btn p-2.5 rounded-lg bg-surface-800 border border-surface-700 text-textMuted hover:text-white text-sm font-robotomono">Roboto Mono</button>
+            <button onclick="app.setFont('sans')" id="font-sans" class="font-btn p-2.5 rounded-lg bg-surface-800 border border-surface-700 text-textMuted hover:text-white text-sm font-sans col-span-2">Inter (Sans)</button>
+          </div>
+        </div>
+
+        <!-- Sound Toggle -->
+        <div class="flex items-center justify-between bg-surface-950 p-4 rounded-xl border border-surface-800">
+          <div>
+            <div class="text-sm text-white font-medium">Mechanical Sounds</div>
+            <div class="text-xs text-textMuted">Soft tactile audio feedback</div>
+          </div>
+          <button id="toggle-sound" onclick="app.toggleSound()" class="w-12 h-6 bg-primary rounded-full relative transition-colors">
+            <div class="w-5 h-5 bg-white rounded-full absolute top-0.5 right-0.5 shadow-sm transition-transform" id="toggle-sound-knob"></div>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leaderboard Modal -->
+  <div id="modal-leaderboard" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity">
+    <div class="surface-panel w-full max-w-2xl rounded-2xl p-6 relative scale-95 transition-transform max-h-[80vh] flex flex-col" id="modal-leaderboard-content">
+      <button onclick="app.toggleLeaderboardModal()" class="absolute top-4 right-4 text-textMuted hover:text-white">
+        <i class="ph-bold ph-x text-xl"></i>
+      </button>
+      <h3 class="text-xl font-bold text-white mb-1 flex items-center gap-2">
+        <i class="ph-fill ph-trophy text-primary"></i> Global Leaderboard
+      </h3>
+      <p class="text-xs text-textMuted mb-6">Top Time 60s performances globally.</p>
+      
+      <div class="flex-1 overflow-y-auto pr-2" id="leaderboard-list">
+        <div class="flex justify-center py-8"><i class="ph ph-spinner-gap animate-spin text-2xl text-primary"></i></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Auth Modal -->
+  <div id="modal-auth" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity">
+    <div class="surface-panel w-full max-w-sm rounded-2xl p-8 relative scale-95 transition-transform text-center" id="modal-auth-content">
+      <button onclick="app.closeAuthModal()" class="absolute top-4 right-4 text-textMuted hover:text-white">
+        <i class="ph-bold ph-x text-xl"></i>
+      </button>
+      <div class="w-16 h-16 bg-surface-800 rounded-2xl flex items-center justify-center mx-auto mb-5 border border-surface-700 shadow-inner">
+        <i class="ph-fill ph-user-circle text-4xl text-primary"></i>
+      </div>
+      <h3 class="text-xl font-bold text-white mb-2">Save Your Progress</h3>
+      <p class="text-sm text-textMuted mb-6">Sign in to compete on the leaderboard and save your historical statistics.</p>
+      
+      <div id="auth-error-msg" class="hidden text-xs text-error mb-4 bg-error/10 p-3 rounded-lg border border-error/20 text-left"></div>
+
+      <div id="auth-ui-guest">
+        <button onclick="app.signInWithGoogle()" class="w-full bg-white hover:bg-surface-200 text-surface-900 font-bold py-3 rounded-xl flex items-center justify-center gap-3 transition shadow-md">
+          <svg class="w-5 h-5" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+          Continue with Google
+        </button>
+      </div>
+      <div id="auth-ui-logged" class="hidden">
+        <p class="text-white font-medium mb-4" id="auth-welcome-text">Signed in as User</p>
+        <button onclick="app.signOut()" class="w-full bg-surface-800 hover:bg-surface-700 border border-surface-700 text-white font-semibold py-3 rounded-xl transition">
+          Sign Out
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="w-full py-6 text-center text-xs text-surface-500 font-sans z-10 border-t border-surface-900 mt-auto bg-surface-950/80 backdrop-blur">
+    Handcrafted by Rahul, a fellow tech guy & Java Full-Stack Architect.
+  </footer>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    // Standard Words Array (Subset for demo, typically ~200 words)
+    const WORDS_POOL = [
+      "the", "be", "to", "of", "and", "a", "in", "that", "have", "i", "it", "for", "not", "on", "with", "he", "as", 
+      "you", "do", "at", "this", "but", "his", "by", "from", "they", "we", "say", "her", "she", "or", "an", "will", 
+      "my", "one", "all", "would", "there", "their", "what", "so", "up", "out", "if", "about", "who", "get", "which", 
+      "go", "me", "when", "make", "can", "like", "time", "no", "just", "him", "know", "take", "people", "into", "year", 
+      "your", "good", "some", "could", "them", "see", "other", "than", "then", "now", "look", "only", "come", "its", 
+      "over", "think", "also", "back", "after", "use", "two", "how", "our", "work", "first", "well", "way", "even", 
+      "new", "want", "because", "any", "these", "give", "day", "most", "us", "great", "between", "need", "large", 
+      "system", "program", "state", "run", "number", "high", "world", "water", "call", "long", "find", "code", "small",
+      "quick", "speed", "test", "focus", "clean", "type", "fast", "shift", "press", "space", "score", "build", "engine",
+      "learn", "practice", "rush", "glass", "smooth", "elegant", "future", "modern", "design", "think", "faster"
+    ];
+
+    const QUOTES_POOL = [
+      "The only way to do great work is to love what you do.",
+      "Life is what happens when you're busy making other plans.",
+      "The future belongs to those who believe in the beauty of their dreams.",
+      "It is during our darkest moments that we must focus to see the light.",
+      "Do not go where the path may lead, go instead where there is no path and leave a trail.",
+      "In three words I can sum up everything I've learned about life: it goes on.",
+      "Success is not final, failure is not fatal: it is the courage to continue that counts."
+    ];
+
+    // Initialize App Scope
+    window.appState = {
+      mode: 'time', // time, words, surprise, drill
+      timeLimit: 30,
+      wordLimit: 25,
+      punctuation: false,
+      numbers: false,
+      font: 'jbmono',
+      soundEnabled: true,
+      weakKeys: [],
+      words: [],
+      currentWordIndex: 0,
+      currentCharIndex: 0,
+      errors: {},
+      latencies: [],
+      history: [],
+      startTime: null,
+      timer: null,
+      active: false,
+      finished: false,
+      stats: { total: 0, correct: 0, missed: 0, extra: 0 }
+    };
+
+    class TypeRushApp {
+      constructor() {
+        this.setupFirebase();
+        this.cacheDOM();
+        this.bindEvents();
+        this.initAudio();
+        this.setMode('time'); // Triggers text gen and UI reset
+      }
+
+      async setupFirebase() {
+        try {
+          const appId = typeof __app_id !== 'undefined' ? __app_id : 'typerush-demo';
+          const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+          this.appId = appId;
+          
+          if(Object.keys(firebaseConfig).length > 0) {
+             this.fbApp = initializeApp(firebaseConfig);
+             this.db = getFirestore(this.fbApp);
+             this.auth = getAuth(this.fbApp);
+             
+             // Check custom token
+             if (typeof __initial_auth_token !== 'undefined') {
+                await signInWithCustomToken(this.auth, __initial_auth_token);
+             } else {
+                await signInAnonymously(this.auth);
+             }
+             
+             onAuthStateChanged(this.auth, (user) => {
+               this.user = user;
+               this.updateAuthUI();
+             });
+          }
+        } catch(e) {
+          console.warn("Firebase not configured, running locally only.");
+        }
+      }
+
+      cacheDOM() {
+        this.elInput = document.getElementById('hidden-input');
+        this.elContainer = document.getElementById('words-container');
+        this.elWindow = document.getElementById('words-window');
+        this.elOverlay = document.getElementById('focus-overlay');
+        this.elTypingBoard = document.getElementById('typing-board');
+        
+        this.elLiveStats = document.getElementById('live-stats');
+        this.elTimer = document.getElementById('live-timer');
+        this.elWpm = document.getElementById('live-wpm');
+        this.elAcc = document.getElementById('live-acc');
+        
+        this.elResults = document.getElementById('results-view');
+        this.elMain = document.querySelector('main');
+        
+        this.subOptions = document.getElementById('sub-options-container');
+      }
+
+      bindEvents() {
+        // Focus handling
+        this.elTypingBoard.addEventListener('click', () => this.focus());
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') this.resetTest();
+          if (e.key === 'Tab') { e.preventDefault(); this.tabPressed = true; }
+          if (e.key === 'Enter' && this.tabPressed) { e.preventDefault(); this.resetTest(); this.tabPressed = false; }
+          if (!window.appState.finished && document.activeElement !== this.elInput && e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
+            this.focus();
+          }
+        });
+        document.addEventListener('keyup', (e) => {
+          if (e.key === 'Tab') this.tabPressed = false;
+        });
+
+        this.elInput.addEventListener('focus', () => this.elOverlay.classList.add('opacity-0', 'pointer-events-none'));
+        this.elInput.addEventListener('blur', () => {
+          if (!window.appState.finished) this.elOverlay.classList.remove('opacity-0', 'pointer-events-none');
+        });
+
+        this.elInput.addEventListener('keydown', (e) => this.handleInput(e));
+        window.addEventListener('resize', () => this.alignActiveWord());
+      }
+
+      focus() {
+        this.elInput.focus();
+      }
+
+      initAudio() {
+        try {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.audioCtx = new AudioContext();
+        } catch (e) {
+          console.warn("Web Audio API not supported");
+        }
+      }
+
+      playClick(type = 'char') {
+        if (!window.appState.soundEnabled || !this.audioCtx) return;
+        if (this.audioCtx.state === 'suspended') this.audioCtx.resume();
+        
+        const osc = this.audioCtx.createOscillator();
+        const gainNode = this.audioCtx.createGain();
+        
+        osc.connect(gainNode);
+        gainNode.connect(this.audioCtx.destination);
+        
+        // Procedural Audio Synthesis - Softened and refined
+        if (type === 'space') {
+          osc.type = 'sine'; // Soft, rounded tone
+          osc.frequency.setValueAtTime(100, this.audioCtx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(30, this.audioCtx.currentTime + 0.1);
+          gainNode.gain.setValueAtTime(0.08, this.audioCtx.currentTime); // Massively reduced volume (was 0.5)
+          gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + 0.1);
+          osc.start(this.audioCtx.currentTime);
+          osc.stop(this.audioCtx.currentTime + 0.1);
+        } else if (type === 'error') {
+          osc.type = 'triangle'; // Clearer but softer than previous sawtooth
+          osc.frequency.setValueAtTime(150, this.audioCtx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(60, this.audioCtx.currentTime + 0.2);
+          gainNode.gain.setValueAtTime(0.12, this.audioCtx.currentTime); // Distinct but not jarring (was 0.3)
+          gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + 0.2);
+          osc.start(this.audioCtx.currentTime);
+          osc.stop(this.audioCtx.currentTime + 0.2);
+        } else {
+          // Standard key - Soft thock/bloop
+          osc.type = 'sine'; // Changed from square to sine for a much softer profile
+          osc.frequency.setValueAtTime(350, this.audioCtx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(120, this.audioCtx.currentTime + 0.05);
+          gainNode.gain.setValueAtTime(0.04, this.audioCtx.currentTime); // Reduced volume (was 0.1)
+          gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + 0.05);
+          
+          // Very subtle high-frequency texture (replacing loud white noise)
+          const bufferSize = this.audioCtx.sampleRate * 0.02;
+          const buffer = this.audioCtx.createBuffer(1, bufferSize, this.audioCtx.sampleRate);
+          const output = buffer.getChannelData(0);
+          for (let i = 0; i < bufferSize; i++) output[i] = Math.random() * 2 - 1;
+          const noise = this.audioCtx.createBufferSource();
+          noise.buffer = buffer;
+          
+          const noiseFilter = this.audioCtx.createBiquadFilter();
+          noiseFilter.type = 'highpass';
+          noiseFilter.frequency.value = 1200; // Filter out low harsh rumble
+          
+          const noiseGain = this.audioCtx.createGain();
+          noiseGain.gain.setValueAtTime(0.01, this.audioCtx.currentTime); // Barely audible texture
+          noiseGain.gain.exponentialRampToValueAtTime(0.001, this.audioCtx.currentTime + 0.02);
+
+          noise.connect(noiseFilter);
+          noiseFilter.connect(noiseGain);
+          noiseGain.connect(this.audioCtx.destination);
+          noise.start(this.audioCtx.currentTime);
+
+          osc.start(this.audioCtx.currentTime);
+          osc.stop(this.audioCtx.currentTime + 0.05);
+        }
+      }
+
+      setMode(mode) {
+        window.appState.mode = mode;
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(`mode-${mode < 'drill' ? mode : 'time'}`)?.classList.add('active');
+        
+        this.renderSubOptions();
+        this.resetTest();
+      }
+
+      renderSubOptions() {
+        const mode = window.appState.mode;
+        let html = '';
+        if (mode === 'time') {
+          [15, 30, 60, 120].forEach(t => {
+            const active = window.appState.timeLimit === t ? 'text-primary font-bold' : 'hover:text-white';
+            html += `<button onclick="app.setTime(${t})" class="transition ${active}">${t}s</button>`;
+          });
+        } else if (mode === 'words') {
+          [10, 25, 50, 100].forEach(w => {
+            const active = window.appState.wordLimit === w ? 'text-primary font-bold' : 'hover:text-white';
+            html += `<button onclick="app.setWords(${w})" class="transition ${active}">${w}</button>`;
+          });
+        } else if (mode === 'surprise') {
+          html = `<span class="text-primary"><i class="ph ph-quotes"></i> Literary Quotes</span>`;
+        } else if (mode === 'drill') {
+          html = `<span class="text-error"><i class="ph ph-barbell"></i> Weak Key Drill</span>`;
+        }
+        this.subOptions.innerHTML = html;
+      }
+
+      setTime(t) { window.appState.timeLimit = t; this.renderSubOptions(); this.resetTest(); }
+      setWords(w) { window.appState.wordLimit = w; this.renderSubOptions(); this.resetTest(); }
+      
+      toggleModifier(mod) {
+        window.appState[mod] = !window.appState[mod];
+        document.getElementById(`mod-${mod}`).classList.toggle('active');
+        this.resetTest();
+      }
+
+      generateText() {
+        const state = window.appState;
+        let wordList = [];
+        
+        if (state.mode === 'surprise') {
+          const quote = QUOTES_POOL[Math.floor(Math.random() * QUOTES_POOL.length)];
+          wordList = quote.split(' ');
+        } else if (state.mode === 'drill' && state.weakKeys.length > 0) {
+          // Find words containing the weak keys
+          const regex = new RegExp(`[${state.weakKeys.join('')}]`, 'i');
+          const heavyWords = WORDS_POOL.filter(w => regex.test(w));
+          const poolToUse = heavyWords.length > 5 ? heavyWords : WORDS_POOL;
+          const count = state.mode === 'words' ? state.wordLimit : 100;
+          for(let i=0; i<count; i++) wordList.push(poolToUse[Math.floor(Math.random() * poolToUse.length)]);
+        } else {
+          // Standard random
+          const count = state.mode === 'words' ? state.wordLimit : 150;
+          for(let i=0; i<count; i++) {
+            let w = WORDS_POOL[Math.floor(Math.random() * WORDS_POOL.length)];
+            
+            // Apply modifiers
+            if(state.punctuation && Math.random() < 0.2) {
+              const puncs = [',', '.', '?', '!', ';', ':', '"', "''"];
+              const p = puncs[Math.floor(Math.random() * puncs.length)];
+              w = Math.random() > 0.5 ? w + p : (p === '"' ? '"' + w : w);
+            }
+            if(state.numbers && Math.random() < 0.15) {
+              w = Math.floor(Math.random() * 1000).toString();
+            }
+            wordList.push(w);
+          }
+        }
+        window.appState.words = wordList;
+      }
+
+      renderText() {
+        this.elContainer.innerHTML = '';
+        window.appState.words.forEach((word, i) => {
+          const wEl = document.createElement('div');
+          wEl.className = `word ${i === 0 ? 'active' : ''}`;
+          
+          for (const char of word) {
+            const cEl = document.createElement('span');
+            cEl.className = 'char pending';
+            cEl.textContent = char;
+            wEl.appendChild(cEl);
+          }
+          
+          if (i === 0) {
+            const caret = document.createElement('div');
+            caret.className = 'caret caret-blink';
+            wEl.appendChild(caret);
+          }
+          
+          this.elContainer.appendChild(wEl);
+        });
+        
+        this.elContainer.style.transform = `translateY(0px)`;
+      }
+
+      resetTest() {
+        clearInterval(window.appState.timer);
+        window.appState.active = false;
+        window.appState.finished = false;
+        window.appState.currentWordIndex = 0;
+        window.appState.currentCharIndex = 0;
+        window.appState.history = [];
+        window.appState.latencies = [];
+        window.appState.stats = { total: 0, correct: 0, missed: 0, extra: 0 };
+        window.appState.lastCharTime = null;
+        
+        this.generateText();
+        this.renderText();
+        
+        this.elResults.classList.add('hidden');
+        this.elMain.classList.remove('hidden');
+        this.elLiveStats.classList.add('opacity-50');
+        
+        if (window.appState.mode === 'time') {
+          this.elTimer.textContent = window.appState.timeLimit;
+        } else if (window.appState.mode === 'words') {
+          this.elTimer.textContent = `0/${window.appState.wordLimit}`;
+        } else {
+          this.elTimer.textContent = '0';
+        }
+        
+        this.elWpm.textContent = '0';
+        this.elAcc.textContent = '100%';
+        this.elInput.value = '';
+        this.focus();
+      }
+
+      startTest() {
+        window.appState.active = true;
+        window.appState.startTime = performance.now();
+        this.elLiveStats.classList.remove('opacity-50');
+        document.querySelector('.caret')?.classList.remove('caret-blink');
+        
+        window.appState.timer = setInterval(() => this.tick(), 1000);
+      }
+
+      tick() {
+        const state = window.appState;
+        const elapsed = Math.floor((performance.now() - state.startTime) / 1000);
+        
+        // Save history for chart
+        const wpm = this.calculateNetWPM();
+        state.history.push({ t: elapsed, wpm: wpm, errors: state.stats.missed });
+        
+        this.elWpm.textContent = wpm;
+        this.elAcc.textContent = this.calculateAccuracy() + '%';
+
+        if (state.mode === 'time') {
+          const left = state.timeLimit - elapsed;
+          this.elTimer.textContent = left;
+          if (left <= 0) this.finishTest();
+        } else if (state.mode === 'words') {
+           // timer string updated in input handler
+        } else {
+           this.elTimer.textContent = elapsed; // surprise mode counts up
+        }
+      }
+
+      handleInput(e) {
+        const state = window.appState;
+        if (state.finished) return;
+        if (["Shift", "Control", "Alt", "Meta", "CapsLock"].includes(e.key)) return;
+        
+        if (!state.active && e.key.length === 1) this.startTest();
+
+        const wordsEl = this.elContainer.children;
+        const currentWordEl = wordsEl[state.currentWordIndex];
+        const wordText = state.words[state.currentWordIndex];
+        const charsEl = currentWordEl.querySelectorAll('.char');
+        const caret = currentWordEl.querySelector('.caret');
+
+        const now = performance.now();
+        if(state.lastCharTime && e.key.length === 1) {
+          const lat = now - state.lastCharTime;
+          if(lat < 1000) state.latencies.push(lat); // ignore pauses
+        }
+        state.lastCharTime = now;
+
+        if (e.key === "Backspace") {
+          e.preventDefault();
+          this.playClick('char');
+          if (state.currentCharIndex > 0) {
+            state.currentCharIndex--;
+            const charEl = charsEl[state.currentCharIndex];
+            if (charEl.classList.contains('extra')) {
+              charEl.remove();
+            } else {
+              charEl.className = 'char pending';
+            }
+          } else if (state.currentWordIndex > 0 && wordsEl[state.currentWordIndex - 1].classList.contains('error-word')) {
+            // Allow backspace to previous word if it had errors
+            currentWordEl.classList.remove('active');
+            if(caret) caret.remove();
+            
+            state.currentWordIndex--;
+            const prevWordEl = wordsEl[state.currentWordIndex];
+            prevWordEl.classList.add('active');
+            prevWordEl.classList.remove('error-word');
+            
+            const prevChars = prevWordEl.querySelectorAll('.char');
+            state.currentCharIndex = prevChars.length;
+            
+            // Re-inject caret at end
+            const newCaret = document.createElement('div');
+            newCaret.className = 'caret';
+            prevWordEl.appendChild(newCaret);
+            
+            this.alignActiveWord();
+          }
+          this.updateCaretPosition(wordsEl[state.currentWordIndex]);
+          return;
+        }
+
+        if (e.key === " " || e.code === "Space") {
+          e.preventDefault();
+          if (state.currentCharIndex === 0) return; // Ignore space at start
+          this.playClick('space');
+          
+          let hasError = false;
+          // Mark skipped chars as incorrect
+          for (let i = state.currentCharIndex; i < wordText.length; i++) {
+             charsEl[i].className = 'char incorrect';
+             hasError = true;
+             state.stats.missed++;
+             this.recordError(wordText[i]);
+          }
+          
+          // Check if any typed char was wrong
+          charsEl.forEach(c => {
+             if (c.classList.contains('incorrect') || c.classList.contains('extra')) hasError = true;
+          });
+
+          if (hasError) currentWordEl.classList.add('error-word');
+          
+          currentWordEl.classList.remove('active');
+          if(caret) caret.remove();
+          
+          state.currentWordIndex++;
+          state.currentCharIndex = 0;
+
+          if (state.mode === 'words') {
+             this.elTimer.textContent = `${state.currentWordIndex}/${state.wordLimit}`;
+             if (state.currentWordIndex >= state.wordLimit) return this.finishTest();
+          } else if (state.currentWordIndex >= state.words.length) {
+             return this.finishTest();
+          }
+
+          const nextWordEl = wordsEl[state.currentWordIndex];
+          nextWordEl.classList.add('active');
+          const newCaret = document.createElement('div');
+          newCaret.className = 'caret';
+          nextWordEl.appendChild(newCaret);
+          
+          this.updateCaretPosition(nextWordEl);
+          this.alignActiveWord();
+          return;
+        }
+
+        // Regular Typing
+        if (e.key.length === 1) {
+          e.preventDefault();
+          state.stats.total++;
+          
+          if (state.currentCharIndex < wordText.length) {
+             const expected = wordText[state.currentCharIndex];
+             const charEl = charsEl[state.currentCharIndex];
+             
+             if (e.key === expected) {
+                charEl.className = 'char correct';
+                state.stats.correct++;
+                this.playClick('char');
+             } else {
+                charEl.className = 'char incorrect';
+                state.stats.missed++;
+                this.recordError(expected);
+                this.playClick('error');
+             }
+             state.currentCharIndex++;
+          } else {
+             // Overtyping
+             if (state.currentCharIndex - wordText.length < 5) {
+                const extra = document.createElement('span');
+                extra.className = 'char extra';
+                extra.textContent = e.key;
+                currentWordEl.insertBefore(extra, caret);
+                state.currentCharIndex++;
+                state.stats.extra++;
+                this.playClick('error');
+             }
+          }
+          this.updateCaretPosition(currentWordEl);
+        }
+      }
+
+      recordError(char) {
+         const c = char.toLowerCase();
+         window.appState.errors[c] = (window.appState.errors[c] || 0) + 1;
+      }
+
+      updateCaretPosition(wordEl) {
+        const caret = wordEl.querySelector('.caret');
+        const chars = wordEl.querySelectorAll('.char');
+        if (!caret) return;
+        
+        if (window.appState.currentCharIndex === 0) {
+           caret.style.left = '4px';
+        } else {
+           const prevChar = chars[window.appState.currentCharIndex - 1];
+           if(prevChar) {
+             caret.style.left = (prevChar.offsetLeft + prevChar.offsetWidth + 1) + 'px';
+           }
+        }
+      }
+
+      alignActiveWord() {
+        const container = this.elContainer;
+        const activeWord = container.querySelector('.word.active');
+        if (!activeWord) return;
+        
+        // offsetTop is completely independent of the CSS transform applied to the container.
+        const topPos = activeWord.offsetTop;
+
+        // If the active word drops past the first line (approx > 50px),
+        // we scroll the container up to anchor the active line visually.
+        if (topPos > 50) {
+           container.style.transform = `translateY(-${topPos - 45}px)`;
+        } else {
+           container.style.transform = `translateY(0px)`;
+        }
+      }
+
+      calculateNetWPM() {
+         const state = window.appState;
+         const elapsedMin = (performance.now() - state.startTime) / 60000;
+         if (elapsedMin <= 0) return 0;
+         return Math.max(0, Math.round((state.stats.correct / 5) / elapsedMin));
+      }
+      calculateRawWPM() {
+         const state = window.appState;
+         const elapsedMin = (performance.now() - state.startTime) / 60000;
+         if (elapsedMin <= 0) return 0;
+         return Math.max(0, Math.round((state.stats.total / 5) / elapsedMin));
+      }
+      calculateAccuracy() {
+         const t = window.appState.stats.total;
+         if (t === 0) return 100;
+         return Math.round((window.appState.stats.correct / t) * 100);
+      }
+
+      finishTest() {
+        clearInterval(window.appState.timer);
+        window.appState.active = false;
+        window.appState.finished = true;
+        
+        this.elMain.classList.add('hidden');
+        this.elResults.classList.remove('hidden');
+        
+        const netWPM = this.calculateNetWPM();
+        const rawWPM = this.calculateRawWPM();
+        const acc = this.calculateAccuracy();
+        const stats = window.appState.stats;
+        
+        document.getElementById('res-wpm').textContent = netWPM;
+        document.getElementById('res-raw-wpm').textContent = `Raw: ${rawWPM}`;
+        document.getElementById('res-acc').innerHTML = `${acc}<span class="text-2xl text-textMuted">%</span>`;
+        document.getElementById('res-chars').textContent = `${stats.correct}/${stats.missed}/${stats.extra}`;
+        
+        // Calculate Consistency (CV of WPM history)
+        const wpms = window.appState.history.map(h => h.wpm).filter(w => w > 0);
+        let cons = 100;
+        if(wpms.length > 2) {
+          const mean = wpms.reduce((a,b)=>a+b,0)/wpms.length;
+          const varc = wpms.reduce((a,b)=>a+Math.pow(b-mean,2),0)/wpms.length;
+          const dev = Math.sqrt(varc);
+          cons = Math.max(0, Math.round(100 - ((dev/mean)*100)));
+        }
+        document.getElementById('res-cons').innerHTML = `${cons}<span class="text-2xl text-textMuted">%</span>`;
+        
+        const avgLat = window.appState.latencies.length ? Math.round(window.appState.latencies.reduce((a,b)=>a+b,0)/window.appState.latencies.length) : 0;
+        document.getElementById('res-lat').innerHTML = `${avgLat}<span class="text-2xl text-textMuted">ms</span>`;
+        
+        document.getElementById('res-test-type').textContent = `Mode: ${window.appState.mode} | Modifiers: ${window.appState.punctuation?'Punc ':''}${window.appState.numbers?'Num':''}`;
+
+        this.drawChart();
+        this.renderWeakKeys();
+        this.saveScoreToCloud(netWPM, acc);
+      }
+
+      drawChart() {
+         const svg = document.getElementById('chart-svg');
+         svg.innerHTML = '';
+         const hist = window.appState.history;
+         if(hist.length < 2) return;
+
+         const maxWpm = Math.max(...hist.map(d=>d.wpm), 40) + 10;
+         const w = svg.clientWidth || 800;
+         const h = svg.clientHeight || 150;
+         
+         const getX = (i) => (i / (hist.length - 1)) * w;
+         const getY = (wpm) => h - (wpm / maxWpm) * h;
+
+         let pathD = `M 0 ${getY(hist[0].wpm)}`;
+         hist.forEach((pt, i) => {
+            if(i>0) {
+               // Smooth curve approx
+               const prevX = getX(i-1);
+               const prevY = getY(hist[i-1].wpm);
+               const currX = getX(i);
+               const currY = getY(pt.wpm);
+               const cpX = (prevX + currX) / 2;
+               pathD += ` C ${cpX} ${prevY}, ${cpX} ${currY}, ${currX} ${currY}`;
+            }
+         });
+
+         const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+         path.setAttribute('d', pathD);
+         path.setAttribute('fill', 'none');
+         path.setAttribute('stroke', '#6366f1'); // Primary
+         path.setAttribute('stroke-width', '3');
+         path.setAttribute('stroke-linecap', 'round');
+         svg.appendChild(path);
+
+         // Error dots
+         hist.forEach((pt, i) => {
+            if(pt.errors > (hist[i-1]?.errors || 0)) {
+               const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+               circle.setAttribute('cx', getX(i));
+               circle.setAttribute('cy', getY(pt.wpm));
+               circle.setAttribute('r', '4');
+               circle.setAttribute('fill', '#f87171');
+               svg.appendChild(circle);
+            }
+         });
+      }
+
+      renderWeakKeys() {
+         const errs = Object.entries(window.appState.errors).sort((a,b)=>b[1]-a[1]).slice(0, 5);
+         const cont = document.getElementById('weak-keys-container');
+         const drillBtn = document.getElementById('btn-drill');
+         cont.innerHTML = '';
+         
+         if(errs.length === 0) {
+            cont.innerHTML = `<span class="text-correct text-sm">Perfect accuracy! No weak keys detected.</span>`;
+            drillBtn.classList.add('hidden');
+            window.appState.weakKeys = [];
+         } else {
+            drillBtn.classList.remove('hidden');
+            window.appState.weakKeys = errs.map(e => e[0]);
+            errs.forEach(e => {
+               const tag = document.createElement('div');
+               tag.className = 'px-3 py-1 rounded bg-error/10 border border-error/20 text-error font-jbmono font-bold';
+               tag.textContent = `${e[0].toUpperCase()} (${e[1]})`;
+               cont.appendChild(tag);
+            });
+         }
+      }
+
+      startDrill() {
+         this.setMode('drill');
+      }
+
+      async saveScoreToCloud(wpm, acc) {
+         if (!this.user || !this.db || window.appState.mode === 'drill') return;
+         if (wpm < 10) return; // Ignore botched tests
+         
+         const payload = {
+            wpm: wpm,
+            acc: acc,
+            mode: window.appState.mode,
+            timeLimit: window.appState.timeLimit,
+            timestamp: serverTimestamp(),
+            uid: this.user.uid,
+            name: this.user.isAnonymous ? 'Anonymous Typist' : this.user.displayName
+         };
+
+         try {
+            // Save to private history
+            await addDoc(collection(this.db, 'artifacts', this.appId, 'users', this.user.uid, 'tests'), payload);
+            
+            // If it's a standard 60s test, push to global leaderboard
+            if(window.appState.mode === 'time' && window.appState.timeLimit === 60) {
+               await addDoc(collection(this.db, 'artifacts', this.appId, 'public', 'data', 'leaderboard'), payload);
+            }
+         } catch(e) {
+            console.error("Cloud save failed:", e);
+         }
+      }
+
+      async loadLeaderboard() {
+         const list = document.getElementById('leaderboard-list');
+         if(!this.db) {
+            list.innerHTML = `<div class="text-center text-textMuted py-4">Database not connected.</div>`;
+            return;
+         }
+         
+         list.innerHTML = `<div class="flex justify-center py-8"><i class="ph ph-spinner-gap animate-spin text-2xl text-primary"></i></div>`;
+         
+         try {
+            // RULE 2: No complex queries. Fetch all and sort locally.
+            const q = query(collection(this.db, 'artifacts', this.appId, 'public', 'data', 'leaderboard'));
+            const snapshot = await getDocs(q);
+            
+            let scores = [];
+            snapshot.forEach(doc => scores.push(doc.data()));
+            
+            // Sort locally descending WPM
+            scores.sort((a, b) => b.wpm - a.wpm);
+            
+            // Deduplicate by UID (keep only highest) and limit to top 10
+            const unique = [];
+            const seen = new Set();
+            for(const s of scores) {
+               if(!seen.has(s.uid)) {
+                  seen.add(s.uid);
+                  unique.push(s);
+               }
+            }
+            const top10 = unique.slice(0, 10);
+            
+            if(top10.length === 0) {
+               list.innerHTML = `<div class="text-center text-textMuted py-4">No scores yet. Be the first!</div>`;
+               return;
+            }
+            
+            let html = '';
+            top10.forEach((s, idx) => {
+               html += `
+                  <div class="flex items-center justify-between p-3 mb-2 rounded-xl bg-glass-100 border border-glass-200">
+                     <div class="flex items-center gap-4">
+                        <div class="w-6 text-center font-bold text-textMuted">#${idx+1}</div>
+                        <div class="font-medium text-white flex items-center gap-2">
+                           ${idx === 0 ? '<i class="ph-fill ph-crown text-yellow-400"></i>' : ''}
+                           ${s.name}
+                        </div>
+                     </div>
+                     <div class="flex items-center gap-4 font-jbmono">
+                        <div class="text-correct">${s.acc}%</div>
+                        <div class="text-primary font-bold text-lg">${s.wpm} WPM</div>
+                     </div>
+                  </div>
+               `;
+            });
+            list.innerHTML = html;
+            
+         } catch(e) {
+            console.error("Leaderboard error:", e);
+            list.innerHTML = `<div class="text-center text-error py-4">Failed to load leaderboard.</div>`;
+         }
+      }
+
+      setFont(f) {
+         window.appState.font = f;
+         document.querySelectorAll('.font-btn').forEach(b => {
+            b.classList.remove('border-primary', 'text-white');
+            b.classList.add('border-glass-200', 'text-textMuted');
+         });
+         document.getElementById(`font-${f}`).classList.add('border-primary', 'text-white');
+         document.getElementById(`font-${f}`).classList.remove('border-glass-200', 'text-textMuted');
+         
+         const fontMap = {
+            'jbmono': '"JetBrains Mono", monospace',
+            'firacode': '"Fira Code", monospace',
+            'spacemono': '"Space Mono", monospace',
+            'robotomono': '"Roboto Mono", monospace',
+            'sans': 'Inter, sans-serif'
+         };
+         document.documentElement.style.setProperty('--typing-font', fontMap[f]);
+      }
+
+      toggleSound() {
+         window.appState.soundEnabled = !window.appState.soundEnabled;
+         const knob = document.getElementById('toggle-sound-knob');
+         const bg = document.getElementById('toggle-sound');
+         if(window.appState.soundEnabled) {
+            bg.classList.add('bg-primary');
+            bg.classList.remove('bg-slate-600');
+            knob.style.transform = 'translateX(-24px)'; // Right
+         } else {
+            bg.classList.remove('bg-primary');
+            bg.classList.add('bg-slate-600');
+            knob.style.transform = 'translateX(0)'; // Left
+         }
+      }
+
+      toggleSettingsModal() {
+         const m = document.getElementById('modal-settings');
+         m.classList.toggle('hidden');
+         setTimeout(() => m.classList.toggle('opacity-0'), 10);
+         if(m.classList.contains('hidden')) this.focus();
+      }
+
+      toggleLeaderboardModal() {
+         const m = document.getElementById('modal-leaderboard');
+         m.classList.toggle('hidden');
+         setTimeout(() => m.classList.toggle('opacity-0'), 10);
+         if(!m.classList.contains('hidden')) {
+            this.loadLeaderboard();
+         } else {
+            this.focus();
+         }
+      }
+
+      // Auth UI Handlers
+      handleAuthClick() {
+         if (this.user && !this.user.isAnonymous) {
+            // Already logged in, maybe show profile or just sign out in modal
+            this.openAuthModal();
+         } else {
+            this.openAuthModal();
+         }
+      }
+      
+      openAuthModal() {
+         const m = document.getElementById('modal-auth');
+         const errBox = document.getElementById('auth-error-msg');
+         if(errBox) errBox.classList.add('hidden');
+         
+         m.classList.remove('hidden');
+         setTimeout(() => m.classList.remove('opacity-0'), 10);
+      }
+      closeAuthModal() {
+         const m = document.getElementById('modal-auth');
+         m.classList.add('opacity-0');
+         setTimeout(() => m.classList.add('hidden'), 200);
+         this.focus();
+      }
+
+      updateAuthUI() {
+         const navBtn = document.getElementById('nav-user-name');
+         const guestUI = document.getElementById('auth-ui-guest');
+         const loggedUI = document.getElementById('auth-ui-logged');
+         const welcome = document.getElementById('auth-welcome-text');
+
+         if (this.user && !this.user.isAnonymous) {
+            const displayName = this.user.displayName || 'User';
+            navBtn.textContent = displayName.split(' ')[0];
+            navBtn.parentElement.classList.add('text-primary');
+            guestUI.classList.add('hidden');
+            loggedUI.classList.remove('hidden');
+            welcome.textContent = `Signed in as ${displayName}`;
+         } else {
+            navBtn.textContent = "Sign In";
+            navBtn.parentElement.classList.remove('text-primary');
+            guestUI.classList.remove('hidden');
+            loggedUI.classList.add('hidden');
+         }
+      }
+
+      async signInWithGoogle() {
+         if(!this.auth) return;
+         const provider = new GoogleAuthProvider();
+         const errBox = document.getElementById('auth-error-msg');
+         if(errBox) errBox.classList.add('hidden');
+
+         try {
+            await signInWithPopup(this.auth, provider);
+            this.closeAuthModal();
+         } catch (error) {
+            console.error("Auth Error", error);
+            if(errBox) {
+                errBox.classList.remove('hidden');
+                if (error.code === 'auth/unauthorized-domain') {
+                    errBox.innerHTML = "<b>Unauthorized Domain:</b><br/>Please add this preview URL to your Firebase Console -> Authentication -> Settings -> Authorized Domains.";
+                } else {
+                    errBox.textContent = "Auth Error: " + error.message;
+                }
+            }
+         }
+      }
+
+      async signOut() {
+         if(!this.auth) return;
+         try {
+            await signOut(this.auth);
+            await signInAnonymously(this.auth); // Fallback to anon
+            this.closeAuthModal();
+         } catch(e) {
+            console.error("Signout Error", e);
+         }
+      }
+    }
+
+    // Initialize Application
+    window.addEventListener('DOMContentLoaded', () => {
+      window.app = new TypeRushApp();
+      // Set initial state of sound toggle visually
+      document.getElementById('toggle-sound-knob').style.transform = 'translateX(-24px)';
+    });
+
+  </script>
+</body>
+</html>
